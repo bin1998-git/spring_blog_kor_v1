@@ -70,7 +70,7 @@ public class BoardPersistRepository {
         String jpql = """
                 SELECT b FROM Board b WHERE b.id = :id
                 """;
-       return em.createQuery(jpql, Board.class)
+        return em.createQuery(jpql, Board.class)
                 .setParameter("id", id)
                 .getSingleResult();
 
@@ -78,4 +78,60 @@ public class BoardPersistRepository {
     }
 
 
+    // 게시글 삭제
+    @Transactional
+    public void deleteById(Integer id) {
+        // 1. 먼저 삭제 하고자하는 엔티티를 조회
+        // 1.1 조회가 되었기 때문에 board는 영속화 된 상태가 되었다
+        Board board = em.find(Board.class, id);
+
+        if (board == null) {
+            throw new IllegalArgumentException("삭제할 게시글을 찾을 수 없습니다 : " + id);
+        }
+
+        em.remove(board);
+    }
+
+
+//    // 게시글 업데이트 조회 (id)
+//    @Transactional
+//    public Board update(Board board) {
+//        String jpql = """
+//                  UPDATE Board b set b.username = :username , b.title = :title , b.content = :content WHERE b.id = :id
+//                """;
+//        em.createQuery(jpql)
+//                .setParameter("username", board.getUsername())
+//                .setParameter("title", board.getTitle())
+//                .setParameter("content", board.getContent())
+//                .setParameter("id", board.getId())
+//                .executeUpdate();
+//
+//        return em.find(Board.class, board.getId());
+//
+//    }
+
+
+    @Transactional
+    public void updateById(Integer id, BoardRequest.UpdateDTO updateDTO) {
+        // 수정시 항상 조회 먼저 확인
+       Board boardEntity = em.find(Board.class, id);
+       // em.find 호출 후 리턴 받은 board는 영속 상태가 되어 졌다.
+
+        if (boardEntity == null) {
+            throw new IllegalArgumentException("수정 할 게시글을 찾을 수 없습니다 : " + id);
+        }
+        // 엔티티 => 테이블과 매핑되는 object는 updateDTO 가 없음
+        // 우리가 관리하고자 하는 엔티티는 Board 이다
+
+        boardEntity.update(updateDTO);
+        // 변경 감지(Dirty Checking)동작 됨.
+        // 영속 컨텍스트에 관리 되어지는 객체(엔티티) 안에 조회 했을 떄 기준으로 1차 캐쉬에 저장되어 짐
+        // boardEntity.id <-- 값이 있다.
+
+        // 그냥 새로운 보드 생성
+        //em.persist(boardEntity);
+
+        // 앞으로 수정 기능을 만들어 줄 때 더티 채킹 동작으로 사용하자.
+
+    }
 }
