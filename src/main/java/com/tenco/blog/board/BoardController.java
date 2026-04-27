@@ -65,11 +65,12 @@ public class BoardController {
 
 
     // 게시글 상세보기 화면 요청
-    // http://localhost:8080/board/{id}
+    // http://localhost:8080/board/1
     @GetMapping("/board/{id}")
     public String detailPage(@PathVariable(name = "id") Integer id, Model model) {
         // 유효성 검사 , 인증 검사
-        Board board = boardNativeRepository.findById(id);
+        // Board board = boardNativeRepository.findById(id);
+        Board board = boardPersistRepository.findById(id);
         model.addAttribute("board", board);
 
 
