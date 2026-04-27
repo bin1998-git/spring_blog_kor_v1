@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 
 @Repository // IoC (있어야지 메모리에 올라감)
 @RequiredArgsConstructor // final을 사용하더라도 di처리됨
@@ -41,4 +43,21 @@ public class BoardPersistRepository {
         return board;
 
     }
+
+    // JPQL을 사용한 게시글 목록 조회
+    public List<Board> findAll() {
+
+        // JPQL : 엔티티 객체를 대상으로 하는 객체지향 쿼리
+        // Board는 엔티티 클래스 명, b는 별칭
+        // 주의! 테이블명이 아니라 엔티티 사용
+        String jpql = """
+                SELECT b FROM Board b ORDER BY b.createdAt DESC
+                """;
+
+        List<Board> boardList = em.createQuery(jpql, Board.class).getResultList();
+
+        return boardList;
+    }
+
+
 }
