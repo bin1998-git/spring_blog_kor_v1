@@ -1,7 +1,6 @@
-package com.tenco.blog.controller;
+package com.tenco.blog.board;
 
-import com.tenco.blog.model.Board;
-import com.tenco.blog.repository.BoardNativeRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -16,12 +15,15 @@ import java.util.List;
 @Slf4j
 @Controller // IoC
 @RequiredArgsConstructor // DI
+
 public class BoardController {
     // DI
     private final BoardNativeRepository boardNativeRepository;
+    private final BoardPersistRepository boardPersistRepository;
 
     /**
      * 게시글 작성 화면 요청
+     *
      * @return 페이지 반환
      * 주소설계 : http://localhost:8080/board/save-form
      */
@@ -33,21 +35,16 @@ public class BoardController {
 
     /**
      * 게시글 작성 기능 요청
+     *
      * @return 페이지 반환
      * 주소설계 : http://localhost:8080/board/save-form
      */
     @PostMapping("/board/save")
-    public String saveProc(
-            @RequestParam("username") String username,
-            @RequestParam("title") String title,
-            @RequestParam("content") String content) {
-        log.info("username : " + username);
-        log.info("title : " + title);
-        log.info("content : " + content);
-        // insert + 트랜잭션 처리
-        boardNativeRepository.save(title, content, username);
-        // redirect <-- 다시 URL 요청 해 !
-        //return "redirect:/";
+    // 사용자 요청 -> http 요청 메세지(post)
+    public String saveProc(BoardRequest.SaveDTO saveDTO) {
+
+        boardPersistRepository.save(saveDTO.toEntity());
+
         return "redirect:/";
     }
 
@@ -70,14 +67,12 @@ public class BoardController {
     @GetMapping("/board/{id}")
     public String detailPage(@PathVariable(name = "id") Integer id, Model model) {
         // 유효성 검사 , 인증 검사
-       Board board =  boardNativeRepository.findById(id);
-       model.addAttribute("board", board);
+        Board board = boardNativeRepository.findById(id);
+        model.addAttribute("board", board);
 
 
         return "board/detail";
     }
-
-
 
 
     // /board/{board.id}/delte
@@ -95,24 +90,24 @@ public class BoardController {
         // 사용자 에게 해당 게시물 내용을 보여줘야 한다.
 
         // 게시글 id로 조회 기능
-       Board board = boardNativeRepository.findById(id);
-       model.addAttribute("board", board);
+        Board board = boardNativeRepository.findById(id);
+        model.addAttribute("board", board);
         return "board/update-form";
     }
 
     // /board/{id}/update
     @PostMapping("/board/{id}/update")
     public String UpdateProc(@PathVariable(name = "id") Integer id,
-                         @RequestParam(name = "username") String username,
-                         @RequestParam(name = "title") String title,
-                         @RequestParam(name = "content") String content) {
+                             @RequestParam(name = "username") String username,
+                             @RequestParam(name = "title") String title,
+                             @RequestParam(name = "content") String content) {
 
         log.info("username : " + username);
         log.info("title : " + title);
-        log.info("content : " + content );
+        log.info("content : " + content);
         log.info("id : " + id);
 
-        boardNativeRepository.updateById(username,title,content,id);
+        boardNativeRepository.updateById(username, title, content, id);
         // 게시글 수정 완료 --> 게시글 목록, 게시글 상세보기 화면
         // 리다이렉트는 뷰 리졸브 동작이 아닌 (내부 파일 찾는 것이 아니고)
         // 그냥 새로운 HTTP Get 요청이다
