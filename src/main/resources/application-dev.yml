@@ -25,7 +25,7 @@ spring:
     console:
       enabled: true
 
-#      초기 데이터 설정
+      #초기 데이터 설정
   sql:
     init:
       data-locations:

@@ -47,14 +47,8 @@ public class BoardPersistRepository {
     // JPQL을 사용한 게시글 목록 조회
     public List<Board> findAll() {
 
-        // JPQL : 엔티티 객체를 대상으로 하는 객체지향 쿼리
-        // Board는 엔티티 클래스 명, b는 별칭
-        // 주의! 테이블명이 아니라 엔티티 사용
-        String jpql = """
-                SELECT b FROM Board b ORDER BY b.createdAt DESC
-                """;
-
-        List<Board> boardList = em.createQuery(jpql, Board.class).getResultList();
+        String jpqlStr = "SELECT b FROM Board b ORDER BY b.id DESC";
+        List<Board> boardList = em.createQuery(jpqlStr,Board.class).getResultList();
 
         return boardList;
     }
@@ -64,16 +58,16 @@ public class BoardPersistRepository {
 
         // 영속성 컨텍스트를 사용하기 위해
         // 1. 엔티티 매니저에서 제공하는 메서드 활용
-        // Board board = em.find(Board.class, id);
+        Board board = em.find(Board.class, id);
         // return board;
         // 2. JPQL 문법으로 Board를 조회하는 방법
-        String jpql = """
-                SELECT b FROM Board b WHERE b.id = :id
-                """;
-        return em.createQuery(jpql, Board.class)
-                .setParameter("id", id)
-                .getSingleResult();
-
+//        String jpql = """
+//                SELECT b FROM Board b WHERE b.id = :id
+//                """;
+//        return em.createQuery(jpql, Board.class)
+//                .setParameter("id", id)
+//                .getSingleResult();
+    return board;
 
     }
 
