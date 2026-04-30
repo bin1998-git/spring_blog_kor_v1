@@ -3,6 +3,7 @@ package com.tenco.blog._core.config;
 
 import com.tenco.blog._core.interceptor.LoginInterceptor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -14,8 +15,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor // DI처리
 public class WebMvcConfig implements WebMvcConfigurer {
 
-
-    private final LoginInterceptor loginInterceptor;
+    @Autowired // DI 처리
+    private  LoginInterceptor loginInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
