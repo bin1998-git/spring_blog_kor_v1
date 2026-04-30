@@ -23,9 +23,7 @@ public class UserController {
 
         // 인증검사
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
 
         // 유효성 검사
         try {
@@ -50,9 +48,7 @@ public class UserController {
 
         // 인증검사
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
 
         User userEntity = userRepository.findById(sessionUser.getId());
         userEntity.setPassword("");
@@ -88,9 +84,6 @@ public class UserController {
         // 여기에 코드가 도달 한다면 우리 db에 정상 사용자임을 논리적으로 확인 됨.
         httpSession.setAttribute("sessionUser", sessionUser);
 
-        System.out.println("로그인 성공");
-        System.out.println("로그인 사용자 : " + sessionUser.getUsername());
-        System.out.println("로그인 이메일 : " + sessionUser.getEmail());
 
         return "redirect:/";
     }
@@ -115,9 +108,6 @@ public class UserController {
     // 회원가입 기능 요청
     // 주소 설계 : http://localhost:8080/join
     @PostMapping("/join")
-//    public String joinProc(@RequestParam(name = "username") String username,
-//                           @RequestParam(name = "password") String password,
-//                           @RequestParam(name = "email") String email) {
 
 
     // 메세지 컨버터라는 녀석이 구문을 분석해서 자동으로 파싱처리
@@ -125,9 +115,6 @@ public class UserController {
     // 파싱 전력 2 - Object DTO 설계
     public String joinProc(UserRequest.JoinDTO joinDTO) {
 
-        log.info("username " + joinDTO.getUsername());
-        log.info("password " + joinDTO.getPassword());
-        log.info("email " + joinDTO.getEmail());
 
         // 1. 유효성 검사하기
         joinDTO.validate(); // 유효성 검사 --> 오류가있다면 예외처리로 넘어감
@@ -141,7 +128,7 @@ public class UserController {
         userRepository.save(joinDTO.toEntity());
 
         // 로그인 화면으로 리다이렉트
-        return "redirect:/";
+        return "redirect:/login-form";
     }
 
 

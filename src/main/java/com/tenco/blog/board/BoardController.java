@@ -32,15 +32,7 @@ public class BoardController {
      */
     @GetMapping("/board/save-form")
     public String saveForm(HttpSession httpSession) {
-
-        // 로그인 여부 체크 - 즉 로그인 한 사용자만 이 페이지 안에 들어올 수 있음
-        // 1. 인증 검사
-        User sessionUser = (User) httpSession.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
-
-
+        // 1. 인증 검사는 LoginInterceptor 에서 먼저 처리함
         return "board/save-form";
     }
 
@@ -59,10 +51,7 @@ public class BoardController {
         // 1. 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
 
-        // 2. 로그인 여부 확인
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
         try {
             // 3. 로그인 된 사용자
             // 3-1 유효성 검사
@@ -83,7 +72,6 @@ public class BoardController {
      */
     @GetMapping({"/", "index"})
     public String list(Model model) {
-
 
         List<Board> boardList = boardPersistRepository.findAll();
         model.addAttribute("boardList", boardList);
@@ -122,21 +110,19 @@ public class BoardController {
         log.info("=== 게시글 삭제 요청 ===");
         // 인증 검사
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
 
         try {
             // 삭제 할 게시글 조회 (권한 체크, 인가 처리)
             Board board = boardPersistRepository.findById(id);
             if (board.getUser().getId() == sessionUser.getId()) {
                 boardPersistRepository.deleteById(id);
+            } else {
+                throw new Exception403("삭제 권한이 없습니다");
             }
-
         } catch (Exception e) {
-            return "redirect:/";
+            throw new Exception403("삭제 권한이 없습니다.");
         }
-
 
         return "redirect:/";
     }
@@ -148,15 +134,13 @@ public class BoardController {
 
         // 인증 처리
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
 
         // 인가 처리
         Board board = boardPersistRepository.findById(id);
         if (sessionUser.getId() != board.getUser().getId()) {
             // 본인이 작성한 글이 맞음
-            throw new RuntimeException("수정 권한이 없습니다");
+            throw new Exception403("수정 권한이 없습니다");
         }
 
 
@@ -171,9 +155,7 @@ public class BoardController {
 
         // 인증 검사
         User sessionUser = (User) session.getAttribute("sessionUser");
-        if (sessionUser == null) {
-            return "redirect:/login-form";
-        }
+
 
         try {
             // 유효성 검사
