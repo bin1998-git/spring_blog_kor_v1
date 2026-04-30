@@ -28,26 +28,17 @@ public class BoardPersistRepository {
     // 게시글 저장
     @Transactional
     public Board save(Board board) {
-        // 매개 변수로 받은 board는 비영속상태
-        // 아직 영속성 컨텍스트에 관리 되고 있지 않는 상태
-        // 데이터베이스와 연관 없는 순수 java 객체 일뿐
         em.persist(board); // insert 처리 완료
-        // 2. 이 board 객체를 영속성 컨텍스트에 넣어 둠 (sql 저장소에 등록)
-        // 영속성 컨텍스트에 들어가더라도 아직 db에 실제 insert가 된건 아님
-
-        //3. 트랜잭션 커밋시점에 실제 db에 접근해서 insert 구문이 실행
-
-        // 4. board 객체의 id변수값을  1차 캐쉬에 map 구조로 보관 되어 짐.
-
-        // 1차 캐쉬에 들어간 이제 영속상태로 변경된 오브젝트를 리턴
         return board;
 
     }
 
     // JPQL을 사용한 게시글 목록 조회
     public List<Board> findAll() {
+        // JOIN FETCH 사용 쿼리 변경 함
+        // N + 1 문제를 해결하는 정밀 제어 , 한번에 다들고오는 구문
 
-        String jpqlStr = "SELECT b FROM Board b ORDER BY b.id DESC";
+        String jpqlStr = "SELECT b FROM Board b JOIN FETCH b.user ORDER BY b.id DESC";
         List<Board> boardList = em.createQuery(jpqlStr,Board.class).getResultList();
 
         return boardList;
@@ -106,26 +97,17 @@ public class BoardPersistRepository {
 
 
     @Transactional
-    public void updateById(Integer id, BoardRequest.UpdateDTO updateDTO) {
+    public Board updateById(Integer id, BoardRequest.UpdateDTO updateDTO) {
         // 수정시 항상 조회 먼저 확인
        Board boardEntity = em.find(Board.class, id);
-       // em.find 호출 후 리턴 받은 board는 영속 상태가 되어 졌다.
 
         if (boardEntity == null) {
             throw new IllegalArgumentException("수정 할 게시글을 찾을 수 없습니다 : " + id);
         }
-        // 엔티티 => 테이블과 매핑되는 object는 updateDTO 가 없음
-        // 우리가 관리하고자 하는 엔티티는 Board 이다
 
         boardEntity.update(updateDTO);
-        // 변경 감지(Dirty Checking)동작 됨.
-        // 영속 컨텍스트에 관리 되어지는 객체(엔티티) 안에 조회 했을 떄 기준으로 1차 캐쉬에 저장되어 짐
-        // boardEntity.id <-- 값이 있다.
+        return boardEntity;
 
-        // 그냥 새로운 보드 생성
-        //em.persist(boardEntity);
-
-        // 앞으로 수정 기능을 만들어 줄 때 더티 채킹 동작으로 사용하자.
 
     }
 }
