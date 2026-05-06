@@ -97,7 +97,12 @@ public class UserService {
     }
 
 
-    // 회원정보 수정 처리(세션 동기화 해야 됨)
+    /**
+     * 사용자 정보 수정 처리 (프로필 업데이트)
+     * @param id (User pk)
+     * @param updateDTO (사용자가 요청한 데이터)
+     * @return user
+     */
     @Transactional
     public User updateById(Integer id, UserRequest.UpdateDTO updateDTO) {
         // 1. 로그 기록 -- 회원 정보 수정 요청 정보 (Id)

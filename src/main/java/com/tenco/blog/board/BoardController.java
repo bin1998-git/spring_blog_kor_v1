@@ -100,9 +100,13 @@ public class BoardController {
     @GetMapping("/board/{id}/update-form")
     public String updateFormPage(@PathVariable(name = "id") Integer id, Model model, HttpSession session) {
 
-        Board boardEntity = boardService.findById(id);
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        // findById <----- 상세보기 화면 요청이라서 누군나 요청이 가능
+        // 즉 인가처리가 안되고 있음
+        Board boardEntity = boardService.findByIdAndCheckOwner(id, sessionUser);
         model.addAttribute("board", boardEntity);
         return "board/update-form";
+
     }
 
     // /board/{id}/update

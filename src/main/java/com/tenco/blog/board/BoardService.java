@@ -1,5 +1,6 @@
 package com.tenco.blog.board;
 
+import com.tenco.blog._core.errors.Exception400;
 import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog.user.User;
 import lombok.RequiredArgsConstructor;
@@ -150,6 +151,32 @@ public class BoardService {
         log.info("게시글 삭제 완료 - id : {}", id);
 
 
+    }
+
+    // 게시글 수정 화면 요청시 인가 처리
+    public Board findByIdWithAuth(Integer id, User sessionUser) {
+        log.info("게시글 수정 권한 서비스 처리");
+
+       Board boardEntity = findById(id);
+
+
+        if (!boardEntity.getUser().getId().equals(sessionUser.getId())) {
+            log.warn("수정 권한 없음 - 작성자 id: {}, 작성자 이름 : {}",
+                    boardEntity.getUser().getId(), sessionUser.getId());
+
+        }
+        return boardEntity;
+    }
+
+    // 게시글 수정 화면 인가 처리
+    // 게시글 상세 보기
+    public Board findByIdAndCheckOwner(Integer id, User sessionUser) {
+        log.info("게시글 수정 화면 조회 서비스");
+        Board boardEntity = findById(id);
+        boardEntity.isOwner(sessionUser.getId());
+        log.warn("수정 권한 없음 - 작성자 id: {}, 작성자 이름 : {}",
+                boardEntity.getUser().getId(), sessionUser.getId());
+        return boardEntity;
     }
 
 
