@@ -24,7 +24,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
     // 1. 게시글 ID로 조회시 사용자 정보도 함께 가져오기
     @Query(""" 
-            SELECT b FROM Board b JOIN FETCH b.user WHERE b.id = : id
+            SELECT b FROM Board b JOIN FETCH b.user WHERE b.id = :id
             """)
     Optional<Board> findByIdJoinUser(@Param("id") Integer id);
 

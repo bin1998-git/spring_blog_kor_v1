@@ -21,8 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor // DI
 
 public class BoardController {
-    // DI
-    private final BoardPersistRepository boardPersistRepository;
+
+    private final BoardService boardService;
 
     /**
      * 게시글 작성 화면 요청
@@ -45,23 +45,12 @@ public class BoardController {
     @PostMapping("/board/save")
     // 사용자 요청 -> http 요청 메세지(post)
     public String saveProc(BoardRequest.SaveDTO saveDTO, HttpSession session) {
-
-        log.info("== 게시글 저장 요청===");
-        // 이 요청 시 사용자가 로그인을 했다면 로그인 정보를 세션 메모리에서 가져오면 된다.
-        // 1. 세션에서 로그인한 사용자 정보 가져오기
         User sessionUser = (User) session.getAttribute("sessionUser");
+        saveDTO.validate();
+        boardService.save(saveDTO, sessionUser);
+        return "redirect:/";
+        // 3.
 
-
-        try {
-            // 3. 로그인 된 사용자
-            // 3-1 유효성 검사
-            saveDTO.validate();
-            boardPersistRepository.save(saveDTO.toEntity(sessionUser));
-            return "redirect:/";
-        } catch (Exception e) {
-            System.out.println("에러 발생 : " + e.getMessage());
-            return "board/save-form";
-        }
 
     }
 
@@ -73,7 +62,7 @@ public class BoardController {
     @GetMapping({"/", "index"})
     public String list(Model model) {
 
-        List<Board> boardList = boardPersistRepository.findAll();
+        List<Board> boardList = boardService.findAll();
         model.addAttribute("boardList", boardList);
         return "board/list";
     }
@@ -84,14 +73,7 @@ public class BoardController {
     @GetMapping("/board/{id}")
     public String detailPage(@PathVariable(name = "id") Integer id, Model model) {
 
-        Board board = boardPersistRepository.findById(id);
-        // board는 연관관계가 User 엔티티와 ManytoOne 관계로 설정이 되어 있다
-        //  직접 쿼리구문을 작성하지 않을 떄 즉, 엔티티 매니저의 메서드로 객체를 조회시
-        // 자동으로 join 구문을 호출해 준다.
-        // 단 Fatch 전략에 따라 이걸 EAGER, LAZY 전략에 따라 한번에 다 조인해서 가져오거나
-        // 필요할 떄 한번 더 요청하는것이 LAZY 전략
-        // 코드상에서 User 에 정보를 요구 (현재 LAZY 전략)
-        //System.out.println(board.getUser().getUsername());
+        Board board = boardService.findById(id);
 
 
         model.addAttribute("board", board);
@@ -107,22 +89,8 @@ public class BoardController {
     // 3. 인가 처리후 삭제 진행
     @PostMapping("/board/{id}/delete")
     public String deleteProc(@PathVariable(name = "id") Integer id, HttpSession session) {
-        log.info("=== 게시글 삭제 요청 ===");
-        // 인증 검사
         User sessionUser = (User) session.getAttribute("sessionUser");
-
-
-        try {
-            // 삭제 할 게시글 조회 (권한 체크, 인가 처리)
-            Board board = boardPersistRepository.findById(id);
-            if (board.getUser().getId() == sessionUser.getId()) {
-                boardPersistRepository.deleteById(id);
-            } else {
-                throw new Exception403("삭제 권한이 없습니다");
-            }
-        } catch (Exception e) {
-            throw new Exception403("삭제 권한이 없습니다.");
-        }
+        boardService.deleteById(id, sessionUser);
 
         return "redirect:/";
     }
@@ -132,19 +100,8 @@ public class BoardController {
     @GetMapping("/board/{id}/update-form")
     public String updateFormPage(@PathVariable(name = "id") Integer id, Model model, HttpSession session) {
 
-        // 인증 처리
-        User sessionUser = (User) session.getAttribute("sessionUser");
-
-
-        // 인가 처리
-        Board board = boardPersistRepository.findById(id);
-        if (sessionUser.getId() != board.getUser().getId()) {
-            // 본인이 작성한 글이 맞음
-            throw new Exception403("수정 권한이 없습니다");
-        }
-
-
-        model.addAttribute("board", board);
+        Board boardEntity = boardService.findById(id);
+        model.addAttribute("board", boardEntity);
         return "board/update-form";
     }
 
@@ -153,24 +110,11 @@ public class BoardController {
     public String UpdateProc(@PathVariable Integer id, BoardRequest.UpdateDTO updateDTO, HttpSession session) {
 
 
-        // 인증 검사
+
         User sessionUser = (User) session.getAttribute("sessionUser");
+        updateDTO.validate();
 
-
-        try {
-            // 유효성 검사
-            updateDTO.validate();
-            // 인가 검사
-            Board board = boardPersistRepository.findById(id);
-            if (board.getUser().getId() != sessionUser.getId()) {
-                throw new RuntimeException("수정할 권한이 없습니다");
-            }
-            boardPersistRepository.updateById(id, updateDTO);
-
-        } catch (Exception e) {
-            return "redirect:/board/" + id + "update-form";
-        }
-
+        boardService.updateById(id, updateDTO, sessionUser);
         return "redirect:/board/" + id;
     }
 }

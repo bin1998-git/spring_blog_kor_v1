@@ -1,5 +1,6 @@
 package com.tenco.blog.user;
 
+import com.tenco.blog.board.BoardRequest;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
@@ -37,4 +38,11 @@ public class User {
         this.email = email;
         this.createdAt = createAt;
     }
+
+    // 편의 기능 추가 - 회원 정보 수정
+    public void update(UserRequest.UpdateDTO updateDTO) {
+        this.password = updateDTO.getPassword();
+    }
+
 }
+

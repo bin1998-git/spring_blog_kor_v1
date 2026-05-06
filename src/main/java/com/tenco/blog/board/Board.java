@@ -1,6 +1,8 @@
 package com.tenco.blog.board;
 
 
+import com.tenco.blog._core.errors.Exception403;
+import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog.user.User;
 import com.tenco.blog.util.MyDateUtil;
 import jakarta.persistence.*;
@@ -75,5 +77,14 @@ public class Board {
         // 4. 물리적인 DB에 반영됨
 
     }
+
+    // 편의 기능 - 게시글 소유자 확인을 위한 기능 추가
+    public boolean isOwner(Integer sessionUserId) {
+        if (!this.user.getId().equals(sessionUserId)) {
+            throw new Exception403("본인이 작성한 게시글이 아닙니다");
+        }
+        return true;
+    }
+
 
 }
