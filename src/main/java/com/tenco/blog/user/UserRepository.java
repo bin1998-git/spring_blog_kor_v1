@@ -1,80 +1,43 @@
 package com.tenco.blog.user;
 
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-@Repository // IOC
-@RequiredArgsConstructor
-public class UserRepository {
+import java.util.Optional;
 
-    // DI - 스프링 프레임 워크가 주소값 자동 주입
-    private final EntityManager em;
+//@Repository - 상속하고 있기 때문에 작성안해줘도 됨
+public interface UserRepository extends JpaRepository<User, Integer> {
 
-    public User findById(Integer id) {
-       User user = em.find(User.class, id);
-       if (user == null) {
-           throw new RuntimeException("사용자를 찾을 수 없습니다");
+    // 1. 사용자 등록 및 수정: save(User user)
+    // - 새로운 사용자를 Insert 하거나, 기존 사용자 정보를 UPDATE 합니다
+    // 2. 사용자 단건 조회 기능 : findById(Integer id)
+    // -PK(id) 를 통해 특정 사용자를 조회하며 Optional<User>를 반환
+    // 3. 전체 사용자 목록 조회 : findAll()
+    // - DB에 저장된 모든 사용자 정보를 List<User> 형태로 가지고 온다.
+    // 4. 사용자 삭제 : deleteById(Integer id)
+    // - 특정 id를 가진 사용자를 삭제합니다.
+    // 5. 데이터 갯수: count()
+    // - 전체 레코드 수 변환
+    // 6. 존재 여부 확인 : existsById(Integer id)
+    // - 해당 id를 가진 데이터가 있는지 확인하여 boolean 타입으로 반환
 
-       }
-       return user;
-    }
+    // 사용자명으로 사용자 조회(중복 체크 확인용)
+    @Query("""
+                SELECT u FROM User u WHERE u.username = :username
+            """)
+    Optional<User> findByUserName();
 
-
-    // 회원 가입 요청시 -->  insert
-    @Transactional
-    public User save(User user) {
-        // 매개 변수로 들어온 User Object는 비영속
-        em.persist(user);
-        // 여기서의 유저는 영속된 상태이다(em.persist가 되어서)
-        return user;
-    }
-
-
-    // 사용자 이름 중복 확인(name에 unique걸려있음)
-    public User findByUsername(String username) {
-        String jpql = " SELECT u FROM User u WHERE u.username = :username";
-
-        //  Query query = em.createQuery(jpql,User.class);
-        //            query.setParameter("username", username);
-        //            User user = (User) query.getSingleResult();
-
-        try {
-            return em.createQuery(jpql, User.class).setParameter("username", username).getSingleResult();
-        } catch (Exception e) {
-            return null;
-        }
+    // 사용자명과 비밀번호로 사용자 조회 (로그인용)
+    @Query("""
+                SELECT u FROM User u WHERE u.username = :username AND u.password = :password
+            """)
+    Optional<User> findByUsernameAndPassword(@Param("username") String username, @Param("password") String password);
+    // 사용자 정보 수정 - [더티 채킹 사용할 예정]
+    // 트랜잭션 내에서 조회된 객체 상태를 변경하면
+    // 트랙잭션이 끄탄느 시점에 JAA 가 변경된 내용을 자동으로 감지해서
+    // DB에 UPDATE쿼리를 날려주는 기능을 말한다
 
 
-    }
-
-
-    // 로그인 요청시 --> select
-    public User findByUsernameAndPassword(String username, String password) {
-        String jpqlStr = """
-                    SELECT u FROM User u WHERE u.username = :username  AND u.password = :password
-                """;
-
-
-        try {
-            return em.createQuery(jpqlStr, User.class).setParameter("username", username).setParameter("password", password).getSingleResult();
-
-        } catch (Exception e) {
-            return null;
-        }
-
-
-    }
-
-
-    @Transactional
-    public User updateById(Integer id, UserRequest.UpdateDTO updateDTO) {
-
-        User userEntity = findById(id); // 영속성 컨텍스트에 관리되는 엔티티
-
-        userEntity.setPassword(updateDTO.getPassword()); // 객체의 상태값 변경
-
-        return userEntity;
-    }
 }
