@@ -24,10 +24,8 @@ public class UserController {
         // 인증검사 - LoginInterceptor 에서 처리
         // 유효성 검사
         updateDTO.validate();
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        User userEntity = userService.updateById(sessionUser.getId(), updateDTO);
-        // 세션 동기화 처리
-        session.setAttribute("sessionUser", userEntity);
+        UserResponse.SessionDTO sessionUser = (UserResponse.SessionDTO) session.getAttribute("sessionUser");
+        userService.회원정보수정(sessionUser.getId(), updateDTO,session);
         return "redirect:/";
 
     }
@@ -37,9 +35,10 @@ public class UserController {
     @GetMapping("/user/update-form")
     public String updateFormPage(HttpSession session, Model model) {
         // 인증검사 -> 로그인 한 상태 임
-        User sessionUser = (User) session.getAttribute("sessionUser");
-        User userEntity = userService.findById(sessionUser.getId());
-        model.addAttribute("user", userEntity);
+        UserResponse.SessionDTO sessionUser = (UserResponse.SessionDTO) session.getAttribute("sessionUser");
+
+        UserResponse.SessionDTO sessionDTO = userService.회원정보수정화면(sessionUser.getId());
+        model.addAttribute("user", sessionDTO);
         return "user/update-form";
     }
 
@@ -54,13 +53,13 @@ public class UserController {
 
     // 로그인 기능 요청
     @PostMapping("/login")
-    public String loginProc(UserRequest.LoginDTO loginDTO, HttpSession session) {
+    public String loginProc(UserRequest.LoginDTO reqloginDTO, HttpSession session) {
 
         // 1. 인증검사 x 유효성 검사 o
-        loginDTO.validate();
+        reqloginDTO.validate();
 
-        User userEntity = userService.login(loginDTO);
-        session.setAttribute("sessionUser", userEntity);
+        UserResponse.SessionDTO sessionDTO = userService.로그인(reqloginDTO);
+        session.setAttribute("sessionUser", sessionDTO);
 
         return "redirect:/";
     }
@@ -93,7 +92,7 @@ public class UserController {
 
         // 1. 유효성 검사하기
         joinDTO.validate(); // 유효성 검사 --> 오류가있다면 예외처리로 넘어감
-        userService.join(joinDTO);
+        userService.회원가입(joinDTO);
 
 
 

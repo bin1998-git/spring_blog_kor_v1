@@ -21,7 +21,7 @@ import java.sql.Timestamp;
 @Table(name = "board_tb")
 @NoArgsConstructor // 기본 생성자 (필수)
 @AllArgsConstructor // 전체 멤버 변수를 넣을 수 있는 생성자.
-@Builder // 빌더 패텆ㄴ
+@Builder // 빌더 패턴
 public class Board {
 
 

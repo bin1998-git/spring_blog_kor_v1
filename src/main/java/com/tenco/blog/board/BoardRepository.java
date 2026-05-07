@@ -22,6 +22,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     // 5. 데이터 개수 :  count()
     // 6. 존재 여부 확인 : existById(Integer id)
 
+    // 단건조회
     // 1. 게시글 ID로 조회시 사용자 정보도 함께 가져오기
     @Query(""" 
             SELECT b FROM Board b JOIN FETCH b.user WHERE b.id = :id
