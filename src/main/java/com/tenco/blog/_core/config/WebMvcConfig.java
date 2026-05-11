@@ -17,7 +17,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired // DI 처리
-    private  LoginInterceptor loginInterceptor;
+    private LoginInterceptor loginInterceptor;
     @Autowired // DI 처리
     private SessionInterceptor sessionInterceptor;
 
@@ -33,7 +33,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         System.out.println("인터셉터 동작 함 ");
 
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/board/**", "/user/**")
+                .addPathPatterns("/board/**", "/user/**", "/reply/**")
                 .excludePathPatterns(
                         // 로그인 관련(인증이 필요 없는 페이지)
                         "/login-form", // 로그인 화면 요청시
@@ -42,8 +42,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
                         // 게시글 조회 관련 (인증 없이도 볼 수 있는 페이지)
                         "/board/list", // 게시글 목록 리스트 화면 요청 시
-                        "/"          , // 메인 페이지
-                        "/index"          , // 메인 페이지
+                        "/", // 메인 페이지
+                        "/index", // 메인 페이지
                         "/board/{id:\\d+}", // 게시글 상세보기( 숫자 Id만 허용)
 
                         // 정적 리소스 (CSS, JS, 이미지 등)
@@ -58,7 +58,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 
     }
-
 
 
 }

@@ -1,5 +1,6 @@
 package com.tenco.blog.reply;
 
+import com.tenco.blog._core.errors.Exception404;
 import com.tenco.blog.board.Board;
 import com.tenco.blog.user.User;
 import jakarta.persistence.*;
@@ -18,7 +19,6 @@ import java.sql.Timestamp;
 @Table(name = "reply_tb")
 @NoArgsConstructor // 기본 생성자 (필수)
 @AllArgsConstructor // 전체 멤버 변수를 넣을 수 있는 생성자.
-@Builder // 빌더 패턴
 public class Reply {
 
 
@@ -30,7 +30,7 @@ public class Reply {
     private String comment;
 
     @CreationTimestamp // pc -> db 자동주입
-    private Timestamp created_At;
+    private Timestamp createdAt;
 
     // 1 : N , N : 1 , M : N <- 중 선택
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,6 +43,28 @@ public class Reply {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Builder
+    public Reply(String comment, User user, Board board) {
+        this.comment = comment;
+        this.user = user;
+        this.board = board;
+    }
+
+    /**
+     * 댓글 소유자 확인 로직(세션정보, DB 작성된 user_id)
+     * @return
+     */
+    public boolean isOwner(Integer userId) {
+       if (this.user == null || userId == null) {
+           return false;
+        }
+       // 본인이 작성한 댓글이 아님
+       if (this.user.getId() != userId) {
+           return false;
+       }
+       return true;
+    }
 
 
 
