@@ -16,7 +16,6 @@ public class UserController {
     private final UserService userService;
 
 
-
     // 프로필 수정 기능 요청
     @PostMapping("/user/update")
     public String updateProc(UserRequest.UpdateDTO updateDTO, HttpSession session) {
@@ -24,8 +23,9 @@ public class UserController {
         // 인증검사 - LoginInterceptor 에서 처리
         // 유효성 검사
         updateDTO.validate();
-        UserResponse.SessionDTO sessionUser = (UserResponse.SessionDTO) session.getAttribute("sessionUser");
-        userService.회원정보수정(sessionUser.getId(), updateDTO,session);
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        User updateUser = userService.회원정보수정(sessionUser.getId(), updateDTO);
+        session.setAttribute("sessionUser", updateUser);
         return "redirect:/";
 
     }
@@ -35,10 +35,10 @@ public class UserController {
     @GetMapping("/user/update-form")
     public String updateFormPage(HttpSession session, Model model) {
         // 인증검사 -> 로그인 한 상태 임
-        UserResponse.SessionDTO sessionUser = (UserResponse.SessionDTO) session.getAttribute("sessionUser");
+        User sessionUser = (User) session.getAttribute("sessionUser");
+        User user = userService.회원정보수정화면(sessionUser.getId());
 
-        UserResponse.SessionDTO sessionDTO = userService.회원정보수정화면(sessionUser.getId());
-        model.addAttribute("user", sessionDTO);
+        model.addAttribute("user", user);
         return "user/update-form";
     }
 
@@ -58,8 +58,8 @@ public class UserController {
         // 1. 인증검사 x 유효성 검사 o
         reqloginDTO.validate();
 
-        UserResponse.SessionDTO sessionDTO = userService.로그인(reqloginDTO);
-        session.setAttribute("sessionUser", sessionDTO);
+        User user = userService.로그인(reqloginDTO);
+        session.setAttribute("sessionUser", user);
 
         return "redirect:/";
     }
@@ -93,8 +93,6 @@ public class UserController {
         // 1. 유효성 검사하기
         joinDTO.validate(); // 유효성 검사 --> 오류가있다면 예외처리로 넘어감
         userService.회원가입(joinDTO);
-
-
 
 
         // 로그인 화면으로 리다이렉트

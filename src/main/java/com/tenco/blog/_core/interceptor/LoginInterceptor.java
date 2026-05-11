@@ -20,7 +20,7 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         HttpSession session = request.getSession();
-        UserResponse.SessionDTO sessionUser = (UserResponse.SessionDTO) session.getAttribute("sessionUser");
+        User sessionUser = (User) session.getAttribute("sessionUser");
         if (sessionUser == null) {
             throw new Exception401("로그인 먼저 해주세요");
         }
@@ -29,15 +29,4 @@ public class LoginInterceptor implements HandlerInterceptor {
     }
 
 
-    // 뷰가 렌더링 되기 전에 낚아 채는 녀석
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
-    }
-
-    // 요청 처리가 완료된 후 , 즉 뷰가 완전 렌더링이 된 후 호출
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
-        HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
-    }
 }

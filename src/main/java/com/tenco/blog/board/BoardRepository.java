@@ -30,7 +30,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     Optional<Board> findByIdJoinUser(@Param("id") Integer id);
 
     // 2. 전체 게시글 조회 (단 한번에 작성자 정보도 조회)
-    @Query("""
+    @Query("""  
             SELECT b FROM Board b JOIN FETCH b.user ORDER BY b.id DESC
             """)
     List<Board> findAllJoinUser();
